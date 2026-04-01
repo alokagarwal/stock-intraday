@@ -1,0 +1,27 @@
+.DS_Store
+alpaca.keys
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Terraform
+infrastructure/.terraform/
+infrastructure/.terraform.lock.hcl
+infrastructure/terraform.tfstate
+infrastructure/terraform.tfstate.backup
+*.tfvars
+
+# Lambda zips (built at deploy time)
+*.zip
+
+# macOS
+.DS_Store
+
+# Environment / credentials (never commit these)
+.env
+*.env
+secrets.json

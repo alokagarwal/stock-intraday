@@ -1,0 +1,51 @@
+name: Daily pre-market scan
+
+on:
+  schedule:
+    - cron: "30 13 * * 1-5"   # 8:30 AM ET Mon-Fri (13:30 UTC)
+  workflow_dispatch:           # manual trigger from GitHub UI
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      AWS_REGION:        ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      WATCHLIST_TABLE:   momentum_watchlist
+      TRADES_TABLE:      momentum_trades
+      SNS_TOPIC_ARN:     ${{ secrets.SNS_TOPIC_ARN }}
+      SECRETS_ARN:       ${{ secrets.SECRETS_ARN }}
+      ALPACA_API_KEY:    ${{ secrets.ALPACA_API_KEY }}
+      ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+      ALPACA_BASE_URL:   ${{ secrets.ALPACA_BASE_URL }}
+      MIN_DOLLAR_VOLUME: "5000000"
+      MIN_PRICE:         "2.00"
+      MAX_PRICE:         "500.00"
+      MIN_GAP_PCT:       "0.03"
+      MAX_GAP_PCT:       "0.40"
+      VIX_HALT_LEVEL:    "35.0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install scanner dependencies
+        run: pip install -r requirements-scanner.txt
+
+      - name: Run scanner
+        run: python scanner_task/pre_market_scanner.py
+
+      - name: Upload scan log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-log-${{ github.run_id }}
+          path: "*.log"
+          retention-days: 7

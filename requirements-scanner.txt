@@ -1,0 +1,6 @@
+# requirements-scanner.txt
+# GitHub Actions runner deps for the daily pre-market scanner
+# Lambda deps (alpaca-py, boto3) are bundled into the zip at deploy time
+alpaca-py>=0.28.0
+boto3>=1.34.0
+requests>=2.32.0
