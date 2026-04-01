@@ -1,6 +1,8 @@
 # requirements-scanner.txt
-# GitHub Actions runner deps for the daily pre-market scanner
-# Lambda deps (alpaca-py, boto3) are bundled into the zip at deploy time
+# Dependencies for scanner_task/pre_market_scanner.py running in GitHub Actions.
+# Pin alpaca-py and let pip resolve its full dependency tree (pytz, websockets,
+# msgpack, pydantic, etc.) — listing only top-level packages avoids the
+# "No module named 'pytz'" class of errors caused by incomplete manual lists.
 alpaca-py>=0.28.0
 boto3>=1.34.0
 requests>=2.32.0

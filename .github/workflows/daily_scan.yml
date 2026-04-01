@@ -27,7 +27,6 @@ jobs:
       MIN_GAP_PCT:           "0.03"
       MAX_GAP_PCT:           "0.40"
       VIX_HALT_LEVEL:        "35.0"
-      # Needed by config.py even though scanner doesn't use them for trading
       STOP_LOSS_PCT:         "0.02"
       BUY_SIGNAL_SCORE:      "65.0"
       MAX_POSITIONS:         "8"
@@ -41,9 +40,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          # No 'cache: pip' here — that requires a requirements.txt or
-          # pyproject.toml at the repo root, which we don't have.
-          # pip install is fast enough without caching for this use case.
+          # No 'cache: pip' — requires requirements.txt at repo root which we
+          # don't have. The install below is fast enough without caching.
 
       - name: Validate secrets
         run: |
@@ -60,17 +58,16 @@ jobs:
 
       - name: Install scanner dependencies
         run: |
-          pip install --quiet \
-            "alpaca-py>=0.28.0" \
-            "boto3>=1.34.0" \
-            "requests>=2.32.0"
+          # Use requirements-scanner.txt so pip resolves the full dependency
+          # tree including transitive deps (pytz, websockets, msgpack, etc.)
+          # that alpaca-py needs but doesn't always pull automatically.
+          pip install --quiet -r requirements-scanner.txt
 
       - name: Run pre-market scanner
         run: |
-          # Redirect stdout+stderr to a log file so we can upload it,
-          # but also print to the Actions console in real time (tee)
+          # tee captures output to a file while also printing to the Actions console.
+          # PIPESTATUS preserves the Python exit code through the pipe.
           python scanner_task/pre_market_scanner.py 2>&1 | tee scan_output.log
-          # Exit with the Python process exit code, not tee's
           exit ${PIPESTATUS[0]}
 
       - name: Upload scan output
@@ -80,6 +77,4 @@ jobs:
           name: scan-output-${{ github.run_id }}
           path: scan_output.log
           retention-days: 7
-          # 'if-no-files-found: warn' prevents the step failing if
-          # the scanner crashed before writing anything
           if-no-files-found: warn
