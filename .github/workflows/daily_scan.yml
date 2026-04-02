@@ -61,7 +61,7 @@ jobs:
           # Use requirements-scanner.txt so pip resolves the full dependency
           # tree including transitive deps (pytz, websockets, msgpack, etc.)
           # that alpaca-py needs but doesn't always pull automatically.
-          pip install --quiet -r requirements-scanner.txt
+          pip install -r requirements-scanner.txt
 
       - name: Run pre-market scanner
         run: |
