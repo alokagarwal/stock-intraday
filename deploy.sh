@@ -82,11 +82,14 @@ pip install \
   --platform manylinux2014_x86_64 \
   --python-version 3.11 \
   --implementation cp \
-  --only-binary=:all: \
   --target "${PKG}" \
   --quiet \
   "alpaca-py>=0.28.0" \
-  "requests>=2.32.0"
+  "requests>=2.32.0" \
+  "pytz>=2024.1"
+# Note: --only-binary=:all: is intentionally omitted.
+# It skips pure-Python packages like pytz that have no binary wheel,
+# causing silent ModuleNotFoundError crashes inside Lambda.
 
 # Trim zip: remove test dirs, __pycache__, dist-info
 find "${PKG}" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true

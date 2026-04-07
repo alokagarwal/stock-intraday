@@ -26,20 +26,28 @@
 #   [REENTRY_TRIGGERED]       [REENTRY_SKIPPED]       [RISK_BLOCK]
 #   [POSITION_SUMMARY]
 
-import logging, sys
+import logging, sys, traceback
 sys.path.insert(0, "/var/task")
 
-import boto3
-from datetime import datetime, timezone
-
-import config
-from trader import AlpacaTrader
-from watchlist_db import WatchlistDB
-from signal_engine import SignalEngine
-from risk_guard import RiskGuard
-
+# Configure logging FIRST so import errors are visible in CloudWatch.
+# Without this, a missing module causes a silent START/END with no log output.
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 log.setLevel(logging.INFO)
+
+try:
+    import boto3
+    from datetime import datetime, timezone
+    import config
+    from trader import AlpacaTrader
+    from watchlist_db import WatchlistDB
+    from signal_engine import SignalEngine
+    from risk_guard import RiskGuard
+except Exception as _import_err:
+    log.error(f"[IMPORT_ERROR] Failed to import dependency: {_import_err}")
+    log.error(traceback.format_exc())
+    raise
+
 UTC = timezone.utc
 SEP = "=" * 54
 sep = "-" * 42
